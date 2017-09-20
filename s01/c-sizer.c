@@ -24,8 +24,62 @@
 
 size_t spec_size(const char* spec) {
     (void) spec;
-    // YOUR CODE HERE
-    return 0;
+    int i = 0;
+    int size = 0;
+    while (spec[i] != '\0') {
+      char c = spec[i];
+      if (c == 'c') {
+        // determine if padding is necessary. If it is, add it
+        if (size % __alignof__(char) != 0) {
+            size += sizeof(char) - size % __alignof__(char);
+        }
+        size += sizeof(char);
+      }
+      else if (c == 's') {
+        if (size % __alignof__(short) != 0) {
+            size += sizeof(short) - size % __alignof__(short);
+        }
+        size += sizeof(short);
+      }
+      else if (c == 'i') {
+        if (size % __alignof__(int) != 0) {
+            size += sizeof(int) - size % __alignof__(int);
+        }
+        size += sizeof(int);
+      }
+      else if (c == 'l') {
+        if (size % __alignof__(long) != 0) {
+            size += sizeof(long) - size % __alignof__(long);
+        }
+        size += sizeof(long);
+      }
+      else if (c == 'z') {
+        if (size % __alignof__(size_t) != 0) {
+            size += sizeof(size_t) - size % __alignof__(size_t);
+        }
+        size += sizeof(size_t);
+      }
+      else if (c == 'f') {
+        if (size % __alignof__(float) != 0) {
+            size += sizeof(float) - size % __alignof__(float);
+        }
+        size += sizeof(float);
+      }
+      else if (c == 'd') {
+        if (size % __alignof__(double) != 0) {
+            size += sizeof(double) - size % __alignof__(double);
+        }
+        size += sizeof(double);
+      }
+      else if (c == 'p') {
+        if (size % __alignof__(void*) != 0) {
+            size += sizeof(void*) - size % __alignof__(void*);
+        }
+          size += sizeof(void*);
+      }
+      i++;
+    }
+    return size;
 }
 
 
@@ -54,12 +108,69 @@ size_t spec_size(const char* spec) {
 
 void spec_print(const char* spec, const void* data) {
     (void) spec, (void) data;
-    // YOUR CODE HERE
+    int i = 0;
+    int progress = 0;
+    // arbitrarily supports structs up to 64 elements in size
+    char* checker = calloc(64, sizeof(char));
+    while (spec[i] != '\0') {
+      char c = spec[i];
+      if (c == 'c') {
+        printf("%p char %c\n", &data + progress, *((char*)data + progress));
+        // track how far along in the struct we are
+        checker[i] = spec[i];
+        progress += spec_size(checker);
+      }
+      else if (c == 's') {
+        printf("%p short %hu\n", &data + progress, *((short*)data + progress));
+        // track how far along in the struct we are
+        checker[i] = spec[i];
+        progress += spec_size(checker);
+      }
+      else if (c == 'i') {
+        printf("%p int %i\n", &data + progress, *((int*)data + progress));
+        // track how far along in the struct we are
+        checker[i] = spec[i];
+        progress += spec_size(checker);
+      }
+      else if (c == 'l') {
+        printf("%p long %lu\n", &data + progress, *((long*)data + progress));
+        // track how far along in the struct we are
+        checker[i] = spec[i];
+        progress += spec_size(checker);
+      }
+      else if (c == 'z') {
+        printf("%p size_t %zu\n", &data + progress, *((size_t*)data + progress));
+        // track how far along in the struct we are
+        checker[i] = spec[i];
+        progress += spec_size(checker);
+      }
+      else if (c == 'f') {
+        printf("%p float %f\n", &data + progress, *((float*)data + progress));
+        // track how far along in the struct we are
+        checker[i] = spec[i];
+        progress += spec_size(checker);
+      }
+      else if (c == 'd') {
+        printf("%p double %lf\n", &data + progress, *((double*)data + progress));
+        // track how far along in the struct we are
+        checker[i] = spec[i];
+        progress += spec_size(checker);
+      }
+      else if (c == 'p') {
+        printf("%p pointer %p\n", &data + progress, ((char*)data + progress));
+        // track how far along in the struct we are
+        checker[i] = spec[i];
+        progress += spec_size(checker);
+      }
+      i++;
+    }
 }
 
 
 int main(int argc, char* argv[]) {
     for (int i = 1; i < argc; ++i) {
         printf("%8zu %s\n", spec_size(argv[i]), argv[i]);
+        struct { char c; char a; int d; double e; } x = { 'A', 'B', 24, 32.4, };
+        spec_print("ci", &x);
     }
 }
